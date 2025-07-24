@@ -28,6 +28,9 @@ contract TokenAuditTrail {
         bytes32 txHash
     );
 
+    // Optional event when a record is deleted
+    event TransferRecordDeleted(uint256 index);
+
     modifier onlyAdmin() {
         require(msg.sender == admin, "Only admin can call");
         _;
@@ -98,5 +101,21 @@ contract TokenAuditTrail {
     function getLatestTransfer() external view returns (TransferRecord memory latestRecord) {
         require(transferRecords.length > 0, "No transfers recorded");
         return transferRecords[transferRecords.length - 1];
+    }
+
+    /// @notice Deletes a transfer record at a specific index (Admin only)
+    /// @param index The index of the transfer record to delete
+    function deleteTransferRecord(uint256 index) external onlyAdmin {
+        require(index < transferRecords.length, "Index out of bounds");
+
+        // Shift all records after the index to fill the gap
+        for (uint i = index; i < transferRecords.length - 1; i++) {
+            transferRecords[i] = transferRecords[i + 1];
+        }
+
+        // Remove the last record
+        transferRecords.pop();
+
+        emit TransferRecordDeleted(index);
     }
 }
