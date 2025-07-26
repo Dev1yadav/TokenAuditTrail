@@ -3,10 +3,17 @@ pragma solidity ^0.8.17;
 
 /// @title TokenAuditTrail
 /// @notice Records all token transfer events immutably for compliance and audit purposes.
-/// @dev This contract tracks transfers of an ERC20-like token and stores an immutable log of each transaction.
 contract TokenAuditTrail {
-
     address public admin;
+
+    constructor() {
+        admin = msg.sender;
+    }
+
+    modifier onlyAdmin() {
+        require(msg.sender == admin, "Only admin can perform this action");
+        _;
+    }
 
     struct TransferRecord {
         address from;
@@ -16,35 +23,12 @@ contract TokenAuditTrail {
         bytes32 txHash;
     }
 
-    // Array to store all transfer records immutably
     TransferRecord[] public transferRecords;
 
-    // Event emitted on every token transfer logged
-    event TransferLogged(
-        address indexed from,
-        address indexed to,
-        uint256 amount,
-        uint256 timestamp,
-        bytes32 txHash
-    );
+    event TransferLogged(address indexed from, address indexed to, uint256 amount, uint256 timestamp, bytes32 txHash);
+    event TransferRecordDeleted(uint256 indexed index);
 
-    // Optional event when a record is deleted
-    event TransferRecordDeleted(uint256 index);
-
-    modifier onlyAdmin() {
-        require(msg.sender == admin, "Only admin can call");
-        _;
-    }
-
-    constructor() {
-        admin = msg.sender;
-    }
-
-    /// @notice Logs a token transfer event immutably
-    /// @param from Address tokens sent from
-    /// @param to Address tokens sent to
-    /// @param amount Number of tokens transferred
-    /// @param txHash The hash of the original token transfer transaction
+    /// @notice Logs a new token transfer record
     function logTransfer(address from, address to, uint256 amount, bytes32 txHash) external onlyAdmin {
         TransferRecord memory record = TransferRecord({
             from: from,
@@ -72,7 +56,6 @@ contract TokenAuditTrail {
 
     /// @notice Get all transfers involving a specific address
     /// @param user Address to filter transfers by
-    /// @return matchedTransfers Array of TransferRecord where the address was involved
     function getTransfersByAddress(address user) external view returns (TransferRecord[] memory matchedTransfers) {
         uint count = 0;
 
@@ -97,14 +80,12 @@ contract TokenAuditTrail {
     }
 
     /// @notice Returns the most recent transfer record
-    /// @return latestRecord The latest TransferRecord
     function getLatestTransfer() external view returns (TransferRecord memory latestRecord) {
         require(transferRecords.length > 0, "No transfers recorded");
         return transferRecords[transferRecords.length - 1];
     }
 
     /// @notice Deletes a transfer record at a specific index (Admin only)
-    /// @param index The index of the transfer record to delete
     function deleteTransferRecord(uint256 index) external onlyAdmin {
         require(index < transferRecords.length, "Index out of bounds");
 
@@ -117,5 +98,33 @@ contract TokenAuditTrail {
         transferRecords.pop();
 
         emit TransferRecordDeleted(index);
+    }
+
+    /// @notice Get all transfers that occurred within a specific time range
+    /// @param startTime The start timestamp (inclusive)
+    /// @param endTime The end timestamp (inclusive)
+    function getTransfersInTimeRange(uint256 startTime, uint256 endTime) external view returns (TransferRecord[] memory timeFilteredTransfers) {
+        require(startTime <= endTime, "Invalid time range");
+
+        uint count = 0;
+
+        // First pass: count how many records match the time range
+        for (uint i = 0; i < transferRecords.length; i++) {
+            if (transferRecords[i].timestamp >= startTime && transferRecords[i].timestamp <= endTime) {
+                count++;
+            }
+        }
+
+        // Allocate memory
+        timeFilteredTransfers = new TransferRecord[](count);
+        uint index = 0;
+
+        // Second pass: collect matching records
+        for (uint i = 0; i < transferRecords.length; i++) {
+            if (transferRecords[i].timestamp >= startTime && transferRecords[i].timestamp <= endTime) {
+                timeFilteredTransfers[index] = transferRecords[i];
+                index++;
+            }
+        }
     }
 }
