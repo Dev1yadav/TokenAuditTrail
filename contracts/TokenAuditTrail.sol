@@ -127,4 +127,16 @@ contract TokenAuditTrail {
             }
         }
     }
+
+    /// @notice Returns a transfer record by its transaction hash
+    /// @param hash The transaction hash to search for
+    function getTransferByTxHash(bytes32 hash) external view returns (TransferRecord memory record, bool found) {
+        for (uint i = 0; i < transferRecords.length; i++) {
+            if (transferRecords[i].txHash == hash) {
+                return (transferRecords[i], true);
+            }
+        }
+        // Return empty struct and false if not found
+        return (TransferRecord(address(0), address(0), 0, 0, 0), false);
+    }
 }
