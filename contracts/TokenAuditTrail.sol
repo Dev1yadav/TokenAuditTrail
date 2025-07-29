@@ -27,6 +27,7 @@ contract TokenAuditTrail {
 
     event TransferLogged(address indexed from, address indexed to, uint256 amount, uint256 timestamp, bytes32 txHash);
     event TransferRecordDeleted(uint256 indexed index);
+    event AdminUpdated(address indexed oldAdmin, address indexed newAdmin);
 
     /// @notice Logs a new token transfer record
     function logTransfer(address from, address to, uint256 amount, bytes32 txHash) external onlyAdmin {
@@ -48,14 +49,12 @@ contract TokenAuditTrail {
     }
 
     /// @notice Returns a transfer record at a specific index
-    /// @param index The index of the transfer record
     function getTransferRecord(uint256 index) external view returns (TransferRecord memory) {
         require(index < transferRecords.length, "Index out of bounds");
         return transferRecords[index];
     }
 
     /// @notice Get all transfers involving a specific address
-    /// @param user Address to filter transfers by
     function getTransfersByAddress(address user) external view returns (TransferRecord[] memory matchedTransfers) {
         uint count = 0;
 
@@ -101,8 +100,6 @@ contract TokenAuditTrail {
     }
 
     /// @notice Get all transfers that occurred within a specific time range
-    /// @param startTime The start timestamp (inclusive)
-    /// @param endTime The end timestamp (inclusive)
     function getTransfersInTimeRange(uint256 startTime, uint256 endTime) external view returns (TransferRecord[] memory timeFilteredTransfers) {
         require(startTime <= endTime, "Invalid time range");
 
@@ -129,7 +126,6 @@ contract TokenAuditTrail {
     }
 
     /// @notice Returns a transfer record by its transaction hash
-    /// @param hash The transaction hash to search for
     function getTransferByTxHash(bytes32 hash) external view returns (TransferRecord memory record, bool found) {
         for (uint i = 0; i < transferRecords.length; i++) {
             if (transferRecords[i].txHash == hash) {
@@ -138,5 +134,13 @@ contract TokenAuditTrail {
         }
         // Return empty struct and false if not found
         return (TransferRecord(address(0), address(0), 0, 0, 0), false);
+    }
+
+    /// @notice Updates the admin address (Only current admin can call)
+    /// @param newAdmin The new admin address
+    function updateAdmin(address newAdmin) external onlyAdmin {
+        require(newAdmin != address(0), "New admin cannot be zero address");
+        emit AdminUpdated(admin, newAdmin);
+        admin = newAdmin;
     }
 }
