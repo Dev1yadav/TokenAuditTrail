@@ -28,16 +28,22 @@ contract TokenAuditTrail {
         bytes32 txHash
     );
 
+    // Modifier to restrict functions to admin only
     modifier onlyAdmin() {
         require(msg.sender == admin, "Only admin can call");
         _;
     }
 
+    // Constructor to set the deploying address as admin
     constructor() {
         admin = msg.sender;
     }
 
     /// @notice Logs a token transfer event immutably
+    /// @param from The sender address
+    /// @param to The receiver address
+    /// @param amount The amount of tokens transferred
+    /// @param txHash The hash of the transaction
     function logTransfer(address from, address to, uint256 amount, bytes32 txHash) external onlyAdmin {
         TransferRecord memory record = TransferRecord({
             from: from,
@@ -57,6 +63,7 @@ contract TokenAuditTrail {
     }
 
     /// @notice Returns a transfer record at a specific index
+    /// @param index The index of the transfer record
     function getTransferRecord(uint256 index) external view returns (TransferRecord memory) {
         require(index < transferRecords.length, "Index out of bounds");
         return transferRecords[index];
@@ -88,4 +95,11 @@ contract TokenAuditTrail {
 
         return result;
     }
-}
+
+    /// @notice Allows the current admin to update the admin address
+    /// @param newAdmin The address of the new admin
+    function updateAdmin(address newAdmin) external onlyAdmin {
+        require(newAdmin != address(0), "Invalid new admin address");
+        admin = newAdmin;
+    }
+        }
