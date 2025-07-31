@@ -107,4 +107,14 @@ contract TokenAuditTrail {
             }
         }
     }
-      }
+
+    /// @notice Returns the transfer record matching a specific transaction hash
+    function getTransferByTxHash(bytes32 txHash) external view returns (TransferRecord memory) {
+        for (uint256 i = 0; i < transferRecords.length; i++) {
+            if (transferRecords[i].txHash == txHash) {
+                return transferRecords[i];
+            }
+        }
+        revert("Transaction hash not found");
+    }
+}
