@@ -136,6 +136,21 @@ contract TokenAuditTrail {
         return (TransferRecord(address(0), address(0), 0, 0, 0), false);
     }
 
+    /// @notice Returns the total amount sent and received by a specific address
+    /// @param user The address to check
+    /// @return totalSent Total amount sent by the address
+    /// @return totalReceived Total amount received by the address
+    function getTotalTransferredByAddress(address user) external view returns (uint256 totalSent, uint256 totalReceived) {
+        for (uint i = 0; i < transferRecords.length; i++) {
+            if (transferRecords[i].from == user) {
+                totalSent += transferRecords[i].amount;
+            }
+            if (transferRecords[i].to == user) {
+                totalReceived += transferRecords[i].amount;
+            }
+        }
+    }
+
     /// @notice Updates the admin address (Only current admin can call)
     /// @param newAdmin The new admin address
     function updateAdmin(address newAdmin) external onlyAdmin {
