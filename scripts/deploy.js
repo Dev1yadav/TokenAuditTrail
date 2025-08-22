@@ -12,7 +12,7 @@ contract TokenAuditTrail {
     bool public paused;
 
     struct TransferRecord {
-        address from;
+        address  from;
         address to;
         uint256 amount;
         uint256 timestamp;
