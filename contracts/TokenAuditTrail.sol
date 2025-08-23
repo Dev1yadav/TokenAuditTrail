@@ -15,7 +15,7 @@ contract TokenAuditTrail {
         _;
     }
 
-    struct TransferRecord {
+    struct  TransferRecord {
         address from;
         address to;
         uint256 amount;
