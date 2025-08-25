@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-/// @title TokenAuditTrail
+/// @title Token AuditTrail
 /// @notice Records all token transfer events immutably for compliance and audit purposes.
 contract TokenAuditTrail {
     address public admin;
