@@ -21,7 +21,7 @@ contract TokenAuditTrail {
 
     TransferRecord[] public transferRecords;
 
-    /// @dev Maps txHash => index+1 in transferRecords for O(1) lookup. 0 means "not present".
+    /// @dev Maps  txHash => index+1 in transferRecords for O(1) lookup. 0 means "not present".
     mapping(bytes32 => uint256) private txIndexPlusOne;
 
     /// @dev Simple aggregates for analytics
