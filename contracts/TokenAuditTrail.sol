@@ -1,4 +1,4 @@
-// SPDX-Lic ens e-Identifier: MIT
+//  SPDX-Lic ens e-Identifier: MIT
 pragma solidity ^0.8.17;
 
 /// @title Token AuditTrail
